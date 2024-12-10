@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Tracker</title>
+  <link rel="icon" type="image/icon"
+    href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRq24yBaXZlv4zB9qpE38oIBtF9sW-8k120dw&s">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      background: black;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 400px;
+      background: rgb(96 125 139 / 39%);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      z-index: 1;
+    }
+
+    .stars {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/stars.png');
+      background-size: cover;
+      animation: moveStars 20s linear infinite;
+    }
+
+    @keyframes moveStars {
+      0% {
+        background-position: 0 0;
+      }
+
+      100% {
+        background-position: 0 -1000px;
+      }
+    }
+
+
+    h1 {
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .budget-display {
+      color: #fff;
+    }
+
+    .budget-display p {
+      margin: 10px 0;
+      font-size: 18px;
+    }
+
+    form {
+      margin: 20px 0;
+    }
+
+    form input,
+    form select,
+    form button {
+      margin: 5px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: transparent;
+      color: #fff;
+    }
+
+    option {
+      background: black;
+      color: #fff;
+    }
+
+    form button {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #218838;
+    }
+
+    .clear-btn {
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+      background-color: #dc3545;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .clear-btn:hover {
+      background-color: #c82333;
+    }
+
+    #transactionList {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    #transactionList li {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f8f9fa;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #transactionList .income {
+      color: #28a745;
+      background: transparent;
+    }
+
+    #transactionList .expense {
+      color: #dc3545;
+      background: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stars"></div>
+
+  <div class="container">
+    <h1>Budget Tracker</h1>
+
+    <div class="budget-display">
+      <p><strong>Total Income:</strong> $<span id="totalIncome">0</span></p>
+      <p><strong>Total Expense:</strong> $<span id="totalExpense">0</span></p>
+      <p><strong>Balance:</strong> $<span id="balance">0</span></p>
+    </div>
+
+    <form id="transactionForm">
+      <input type="text" id="description" placeholder="Description" required>
+      <input type="number" id="amount" placeholder="Amount" required>
+      <select id="type">
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <button type="submit">Add Transaction</button>
+    </form>
+
+    <ul id="transactionList"></ul>
+
+    <button id="clearAll" class="clear-btn">Clear All Transactions</button>
+  </div>
+  <script>
+    const transactionForm = document.getElementById("transactionForm");
+    const transactionList = document.getElementById("transactionList");
+    const totalIncomeDisplay = document.getElementById("totalIncome");
+    const totalExpenseDisplay = document.getElementById("totalExpense");
+    const balanceDisplay = document.getElementById("balance");
+    const clearAllButton = document.getElementById("clearAll");
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactionForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const description = document.getElementById("description").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      const type = document.getElementById("type").value;
+
+      if (amount <= 0) {
+        alert("Amount must be greater than zero!");
+        return;
+      }
+
+      addTransaction(description, amount, type);
+      updateBudget(type, amount);
+      clearForm();
+    });
+
+    function addTransaction(description, amount, type) {
+      const listItem = document.createElement("li");
+      listItem.classList.add(type);
+      listItem.innerHTML = `
+    ${description} <span>${type === "income" ? "+" : "-"}$${amount.toFixed(2)}</span>
+  `;
+      transactionList.appendChild(listItem);
+    }
+
+    function updateBudget(type, amount) {
+      if (type === "income") {
+        totalIncome += amount;
+      } else if (type === "expense") {
+        totalExpense += amount;
+      }
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const balance = totalIncome - totalExpense;
+      totalIncomeDisplay.textContent = totalIncome.toFixed(2);
+      totalExpenseDisplay.textContent = totalExpense.toFixed(2);
+      balanceDisplay.textContent = balance.toFixed(2);
+    }
+
+    function clearForm() {
+      document.getElementById("description").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("type").value = "income";
+    }
+
+    clearAllButton.addEventListener("click", () => {
+      if (transactionList.children.length === 0) {
+        alert("No transaction details to clear!");
+        return;
+      }
+
+      if (confirm("Are you sure you want to clear all transactions?")) {
+        transactionList.innerHTML = "";
+        totalIncome = 0;
+        totalExpense = 0;
+        updateDisplay();
+      }
+    });
+
+
+  </script>
+</body>
+
+</html>
